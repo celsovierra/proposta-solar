@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html><head><meta charset=UTF-8><title>Proposta Solar</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+body{background:#f5f7fa;min-height:100vh}
+.header{background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:700;color:#1a3a5c;font-size:16px}
+.user-area{display:flex;align-items:center;gap:18px;font-size:13px;color:#4b5563}
+.user-area a{color:#4b5563;text-decoration:none}
+.user-avatar{width:32px;height:32px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.btn-logout{border:1px solid #d1d5db;background:#fff;padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer}
+.container{display:flex;justify-content:center;padding:50px 20px}
+.card{background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.08);width:100%;max-width:560px;padding:32px}
+.card h2{font-size:22px;color:#111827;margin-bottom:6px}
+.card .sub{font-size:13px;color:#6b7280;margin-bottom:24px}
+label{display:block;font-size:11px;font-weight:600;color:#374151;letter-spacing:0.5px;margin-bottom:6px;margin-top:14px}
+input,select{width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:8px;font-size:14px;outline:none}
+input:focus,select:focus{border-color:#2d6a9f;box-shadow:0 0 0 3px rgba(45,106,159,0.1)}
+.btn-gerar{width:100%;background:#1f4e3d;color:#fff;border:none;padding:14px;border-radius:8px;font-size:14px;font-weight:600;margin-top:24px;cursor:pointer}
+.btn-gerar:hover{background:#163a2e}
+</style></head><body>
+<div class=header><div class=logo>PROPOSTA SOLAR</div>
+<div class=user-area><div class=user-avatar>C</div><span>CELSO</span><a href=/config>Configuracoes</a><button class=btn-logout>Logout</button></div></div>
+<div class=container><div class=card>
+<h2>Nova Proposta</h2><p class=sub>Preencha os dados para gerar a proposta em PDF</p>
+<form method=post action=/gerar>
+<label>CLIENTE</label><input name=cliente placeholder="Digite o nome do cliente" required>
+<label>PROJETO ID</label><input name=projeto_id value="#601" readonly>
+<label>CONSUMO ANUAL (kWh)</label><input name=consumo type=number placeholder="Ex: 8400" required>
+<label>INVESTIMENTO (R$)</label><input name=invest type=number placeholder="Ex: 14000" required>
+<label>ESTADO</label><select name=uf id=uf onchange=carregar() required><option value="">Selecione o estado</option><option value=MA>MA</option><option value=PI>PI</option><option value=SP>SP</option><option value=RJ>RJ</option><option value=MG>MG</option><option value=BA>BA</option><option value=PR>PR</option><option value=SC>SC</option><option value=RS>RS</option><option value=PE>PE</option><option value=CE>CE</option><option value=DF>DF</option><option value=GO>GO</option><option value=ES>ES</option><option value=AM>AM</option><option value=PA>PA</option><option value=RN>RN</option><option value=MT>MT</option><option value=MS>MS</option></select>
+<label>CIDADE</label><select name=cidade id=cidade required><option value="">Selecione a cidade</option></select>
+<button class=btn-gerar type=submit>Gerar PDF</button>
+</form></div></div>
+<script>
+const CIDADES = {"MA": {"Sao Luis": [-2.53, -44.3], "Timon": [-5.09, -42.83], "Imperatriz": [-5.53, -47.49]}, "PI": {"Teresina": [-5.09, -42.8], "Parnaiba": [-2.91, -41.78]}, "SP": {"Sao Paulo": [-23.55, -46.63], "Campinas": [-22.91, -47.06]}, "RJ": {"Rio de Janeiro": [-22.91, -43.17]}, "MG": {"Belo Horizonte": [-19.92, -43.94]}, "BA": {"Salvador": [-12.97, -38.5]}, "PR": {"Curitiba": [-25.43, -49.27]}, "SC": {"Florianopolis": [-27.6, -48.55]}, "RS": {"Porto Alegre": [-30.03, -51.23]}, "PE": {"Recife": [-8.05, -34.88]}, "CE": {"Fortaleza": [-3.73, -38.52]}, "DF": {"Brasilia": [-15.79, -47.88]}, "GO": {"Goiania": [-16.68, -49.25]}, "ES": {"Vitoria": [-20.32, -40.34]}, "AM": {"Manaus": [-3.12, -60.02]}, "PA": {"Belem": [-1.46, -48.5]}, "RN": {"Natal": [-5.79, -35.21]}, "MT": {"Cuiaba": [-15.6, -56.1]}, "MS": {"Campo Grande": [-20.44, -54.65]}};
+function carregar(){var uf=document.getElementById("uf").value;var s=document.getElementById("cidade");s.innerHTML="<option value=>Selecione a cidade</option>";if(CIDADES[uf]){Object.keys(CIDADES[uf]).forEach(function(c){var o=document.createElement("option");o.value=c;o.text=c;s.appendChild(o);});}}
+</script></body></html>
