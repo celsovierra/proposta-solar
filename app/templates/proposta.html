@@ -25,7 +25,7 @@ th{background:#1a3a7a;color:#fff}
 <h2>Seu investimento pratico e com retorno garantido</h2>
 <p class="cliente">Cliente: <b>{{cliente}}</b></p>
 <div style="text-align:center"><span class="potencia">Potencia do sistema: {{kwp}} kWp</span></div>
-{% for ex in extras %}<img src="{{ex.src}}" style="position:absolute;left:{{ex.x}}px;top:{{ex.y}}px;width:180px;z-index:99">{% endfor %}
+{% for ex in extras %}<img src="{{ex.src}}" style="position:absolute;left:{{ex.x}}px;top:{{ex.y}}px;width:{{ex.w|default(180)}}px{% if ex.h %};height:{{ex.h}}px{% endif %};z-index:99">{% endfor %}
 </div>
 
 <div class="page">

@@ -96,7 +96,7 @@ async def upload(logo: UploadFile = File(None), casa: UploadFile = File(None), p
         nome = f"extra_{idx}.png"
         with open(f"app/static/uploads/{nome}", "wb") as f:
             shutil.copyfileobj(extra_img.file, f)
-        CONFIG["extras"].append({"src": f"app/static/uploads/{nome}", "x": int(img_x or 0), "y": int(img_y or 0)})
+        CONFIG["extras"].append({"src": f"app/static/uploads/{nome}", "x": int(img_x or 0), "y": int(img_y or 0), "w": 180, "h": 0})
     if quem_somos:
         CONFIG["quem_somos"] = quem_somos
     salvar_config()
@@ -104,11 +104,15 @@ async def upload(logo: UploadFile = File(None), casa: UploadFile = File(None), p
 
 
 @app.post("/mover_extra")
-def mover_extra(indice: int = Form(...), x: int = Form(...), y: int = Form(...)):
+def mover_extra(indice: int = Form(...), x: int = Form(...), y: int = Form(...), w: int = Form(None), h: int = Form(None)):
     carregar_config()
     if 0 <= indice < len(CONFIG["extras"]):
         CONFIG["extras"][indice]["x"] = x
         CONFIG["extras"][indice]["y"] = y
+        if w is not None:
+            CONFIG["extras"][indice]["w"] = w
+        if h is not None:
+            CONFIG["extras"][indice]["h"] = h
         salvar_config()
     return {"ok": True}
 

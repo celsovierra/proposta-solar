@@ -13,7 +13,7 @@ body{background:#f5f7fa;height:100vh;overflow:hidden}
 .card{background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.08);padding:24px;flex:0 0 400px;height:100%;overflow-y:auto}
 .preview{background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.08);padding:20px;flex:1;display:flex;flex-direction:column;height:100%}
 .preview h3{font-size:16px;color:#111827;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-#pdfviewer{flex:1;border:1px solid #e5e7eb;border-radius:8px;overflow-y:auto;background:#525659;cursor:crosshair}
+#pdfviewer{flex:1;border:1px solid #e5e7eb;border-radius:8px;overflow-y:auto;background:#525659;position:relative}
 h2{font-size:22px;color:#111827;margin-bottom:4px}
 .sub{font-size:13px;color:#6b7280;margin-bottom:20px}
 .sec-title{font-size:12px;font-weight:700;color:#1a3a5c;letter-spacing:1px;margin-top:24px;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #e5e7eb}
@@ -26,13 +26,20 @@ textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px
 .img-info input[type=file]{width:100%;font-size:11px;padding:6px;border:1px dashed #d1d5db;border-radius:6px;background:#fff}
 .btn-salvar{width:100%;background:#1f4e3d;color:#fff;border:none;padding:14px;border-radius:8px;font-size:14px;font-weight:600;margin-top:20px;cursor:pointer}
 .btn-voltar{display:inline-block;margin-top:12px;color:#4b5563;text-decoration:none;font-size:13px}
+.extra-card{background:#fafbfc;border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:8px}
+.extra-card .top{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.extra-card img.thumb{width:60px;height:60px;object-fit:cover;border-radius:6px}
+.extra-card .info{flex:1;font-size:12px}
+.extra-card button{font-size:11px;padding:6px 10px;border:none;border-radius:6px;cursor:pointer;color:#fff}
+.btn-edit{background:#2d6a9f;margin-right:4px}
+.btn-del{background:#dc2626}
 </style></head><body>
 <div class=header><div class=logo>PROPOSTA SOLAR</div>
 <div class=user-area><div class=user-avatar>C</div><span>CELSO</span><a href=/>Voltar ao inicio</a><button class=btn-logout>Logout</button></div></div>
 <div class=container>
 <div class=card>
 <h2>Configuracoes</h2><p class=sub>Clique no PDF para escolher a posicao</p>
-<form method=post action=/upload enctype=multipart/form-data>
+<form method=post action=/upload enctype=multipart/form-data id=form-up>
 <div class=sec-title>TEXTO</div>
 <label>TEXTO QUEM SOMOS</label>
 <textarea name=quem_somos rows=5>{{quem_somos}}</textarea>
@@ -41,7 +48,6 @@ textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px
 <div class=img-item><img class=img-thumb src=/static/img/casa.jpg><div class=img-info><div class=title>IMAGEM DA CASA</div><input type=file name=casa accept=image/*></div></div>
 <div class=img-item><img class=img-thumb src=/static/img/painel.jpg><div class=img-info><div class=title>PAINEL SOLAR</div><input type=file name=painel accept=image/*></div></div>
 <div class=img-item><img class=img-thumb src=/static/img/inversor.jpg><div class=img-info><div class=title>INVERSOR</div><input type=file name=inversor accept=image/*></div></div>
-<div style="margin-top:10px"><button type=button onclick=salvarPosicoes() style="width:100%;background:#2d6a9f;color:#fff;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Salvar Posicao</button></div>
 <div class=sec-title>NOVA IMAGEM PERSONALIZADA</div>
 <div style="padding:12px;background:#f0f9ff;border:1px solid #93c5fd;border-radius:8px;font-size:12px;color:#1e40af">
 <div id=coords style="margin-bottom:8px;font-weight:700">1. Clique no PDF ao lado</div>
@@ -50,20 +56,25 @@ textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px
 <input type=hidden name=img_x id=img_x>
 <input type=hidden name=img_y id=img_y>
 </div>
-<div class=sec-title>IMAGENS ADICIONADAS</div>
-<div id=lista_extras></div>
 <button class=btn-salvar type=submit>Salvar e Atualizar</button>
 </form>
+<div class=sec-title>IMAGENS ADICIONADAS</div>
+<div id=lista_extras></div>
 <a href=/ class=btn-voltar>&larr; Voltar</a>
 </div>
 <div class=preview>
-<h3>Preview do PDF <button onclick=recarregar() style="background:#f5f7fa;border:1px solid #d1d5db;color:#374151;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer">&#8635; Atualizar</button></h3>
+<h3>Preview do PDF <button onclick=carregarPDF() style="background:#f5f7fa;border:1px solid #d1d5db;color:#374151;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer">&#8635; Atualizar</button></h3>
 <div id=pdfviewer></div>
 </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+var posicoes = {{extras_json|safe}};
+var editandoIdx = -1;
+var canvasCapa = null;
+
+// Clique no PDF para escolher posicao
 document.addEventListener("click", function(ev){
   if(ev.target.tagName === "CANVAS"){
     var rect = ev.target.getBoundingClientRect();
@@ -74,85 +85,193 @@ document.addEventListener("click", function(ev){
     document.getElementById("coords").innerHTML = "1. Posicao: X=" + x + " Y=" + y;
   }
 });
-function recarregar(){
-  const container = document.getElementById("pdfviewer");
+
+// Carrega o PDF
+function carregarPDF(){
+  var container = document.getElementById("pdfviewer");
   container.innerHTML = "";
+  canvasCapa = null;
   pdfjsLib.getDocument("/preview?t=" + Date.now()).promise.then(function(pdf){
-    for(let i=1;i<=pdf.numPages;i++){
-      pdf.getPage(i).then(function(page){
-        const viewport = page.getViewport({scale:1.4});
-        const canvas = document.createElement("canvas");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        canvas.style.display = "block";
-        canvas.style.margin = "10px auto";
-        canvas.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
-        container.appendChild(canvas);
-        page.render({canvasContext: canvas.getContext("2d"), viewport: viewport});
-      });
+    var paginas = pdf.numPages;
+    var carregadas = 0;
+    for(var i=1;i<=paginas;i++){
+      (function(pag){
+        pdf.getPage(pag).then(function(page){
+          var viewport = page.getViewport({scale:1.4});
+          var canvas = document.createElement("canvas");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.style.display = "block";
+          canvas.style.margin = "10px auto";
+          canvas.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+          canvas.style.position = "relative";
+          canvas.style.zIndex = "1";
+          container.appendChild(canvas);
+          if(pag === 1) canvasCapa = canvas;
+          page.render({canvasContext: canvas.getContext("2d"), viewport: viewport});
+          carregadas++;
+          if(carregadas === paginas){
+            setTimeout(criarOverlay, 200);
+          }
+        });
+      })(i);
     }
   });
 }
-recarregar();
-</script>
 
-<script>
-var EXTRAS = {{ extras_json|safe }};
-var posicoes = JSON.parse(JSON.stringify(EXTRAS));
-function renderExtras(){
-  var box = document.getElementById("lista_extras");
-  box.innerHTML = "";
-  posicoes.forEach(function(ex, i){
-    var div = document.createElement("div");
-    div.style.cssText = "padding:10px;background:#fafbfc;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px";
-    div.innerHTML = '<div style="display:flex;gap:10px;align-items:center"><img src="/static/uploads/extra_' + i + '.png" style="width:60px;height:60px;object-fit:cover;border-radius:6px"><div style="flex:1;font-size:12px"><b>Imagem ' + (i+1) + '</b><br><span id="pos_' + i + '">X: ' + ex.x + ' | Y: ' + ex.y + '</span></div><button onclick="excluir(' + i + ')" style="background:#dc2626;color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:11px;cursor:pointer">Excluir</button></div>' +
-      '<div style="margin-top:8px;font-size:11px;color:#6b7280">Mova com as setas:</div>' +
-      '<div style="display:flex;gap:4px;margin-top:4px">' +
-      '<button onclick="mover(' + i + ',0,-10)" style="flex:1;padding:6px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer">&#8593;</button>' +
-      '<button onclick="mover(' + i + ',0,10)" style="flex:1;padding:6px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer">&#8595;</button>' +
-      '<button onclick="mover(' + i + ',-10,0)" style="flex:1;padding:6px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer">&#8592;</button>' +
-      '<button onclick="mover(' + i + ',10,0)" style="flex:1;padding:6px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer">&#8594;</button>' +
-      '</div>';
-    box.appendChild(div);
-  });
-}
-function mover(i, dx, dy){
-  posicoes[i].x += dx;
-  posicoes[i].y += dy;
-  document.getElementById("pos_" + i).innerText = "X: " + posicoes[i].x + " | Y: " + posicoes[i].y;
-  aplicarSobreposicao();
-}
-function aplicarSobreposicao(){
+// Cria a camada de imagens arrastáveis sobre a capa
+function criarOverlay(){
+  var antigo = document.getElementById("dragOverlay");
+  if(antigo) antigo.remove();
+  if(!canvasCapa) return;
   var container = document.getElementById("pdfviewer");
-  var overlay = document.getElementById("overlay");
-  if(!overlay){
-    overlay = document.createElement("div");
-    overlay.id = "overlay";
-    overlay.style.cssText = "position:absolute;pointer-events:none;z-index:10";
-    container.style.position = "relative";
-    container.appendChild(overlay);
-  }
-  overlay.innerHTML = "";
+  var overlay = document.createElement("div");
+  overlay.id = "dragOverlay";
+  overlay.style.cssText = "position:absolute;pointer-events:none;z-index:20;left:" + canvasCapa.offsetLeft + "px;top:" + canvasCapa.offsetTop + "px;width:" + canvasCapa.offsetWidth + "px;height:" + canvasCapa.offsetHeight + "px";
+  container.appendChild(overlay);
+
+  // Camada separada para alças (sempre em cima)
+  var camadaAlcas = document.createElement("div");
+  camadaAlcas.id = "camadaAlcas";
+  camadaAlcas.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100";
+  overlay.appendChild(camadaAlcas);
+
   posicoes.forEach(function(ex, i){
+    var editando = (editandoIdx === i);
     var img = document.createElement("img");
     img.src = "/static/uploads/extra_" + i + ".png";
-    img.style.cssText = "position:absolute;left:" + ex.x + "px;top:" + ex.y + "px;width:180px";
+    var w = ex.w || 180;
+    var h = ex.h || 0;
+    img.style.cssText = "position:absolute;left:" + ex.x + "px;top:" + ex.y + "px;width:" + w + "px" + (h ? ";height:" + h + "px" : "") + ";pointer-events:auto;user-select:none;cursor:" + (editando ? "move" : "default") + ";border:2px dashed " + (editando ? "#2d6a9f" : "transparent");
+    img.dataset.idx = i;
+
+    if(editando){
+      // Eventos de arrastar da imagem inteira
+      img.onmousedown = function(ev){
+        ev.preventDefault();
+        var sx = ev.clientX, sy = ev.clientY;
+        var ox = posicoes[i].x, oy = posicoes[i].y;
+        function mv(e){
+          posicoes[i].x = Math.round(ox + (e.clientX - sx));
+          posicoes[i].y = Math.round(oy + (e.clientY - sy));
+          img.style.left = posicoes[i].x + "px";
+          img.style.top = posicoes[i].y + "px";
+          atualizarAlcas(i);
+        }
+        function up(){
+          document.removeEventListener("mousemove", mv);
+          document.removeEventListener("mouseup", up);
+          salvarPosicao(i);
+        }
+        document.addEventListener("mousemove", mv);
+        document.addEventListener("mouseup", up);
+      };
+
+      // Alças nos 4 cantos
+      ["nw","ne","sw","se"].forEach(function(pos){
+        var alca = document.createElement("div");
+        var cw = posicoes[i].w || 180;
+        var ch = posicoes[i].h || Math.round(cw * 0.75);
+        var l = posicoes[i].x + ((pos.indexOf("w")>=0) ? -7 : cw - 7);
+        var t = posicoes[i].y + ((pos.indexOf("n")>=0) ? -7 : ch - 7);
+        alca.style.cssText = "position:absolute;width:16px;height:16px;background:#2d6a9f;border:2px solid #fff;border-radius:50%;left:" + l + "px;top:" + t + "px;z-index:100;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.3);pointer-events:auto";
+        alca.dataset.idx = i;
+        alca.dataset.pos = pos;
+
+        alca.onmousedown = function(ev){
+          ev.preventDefault();
+          ev.stopPropagation();
+          var sx = ev.clientX, sy = ev.clientY;
+          var oW = posicoes[i].w || 180;
+          var oH = posicoes[i].h || Math.round((posicoes[i].w||180) * 0.75);
+          var oX = posicoes[i].x, oY = posicoes[i].y;
+
+          function mv(e){
+            var dx = e.clientX - sx;
+            var dy = e.clientY - sy;
+            var nW = oW, nH = oH, nX = oX, nY = oY;
+            if(pos.indexOf("e")>=0) nW = Math.max(40, oW + dx);
+            if(pos.indexOf("w")>=0){ nW = Math.max(40, oW - dx); nX = oX + dx; }
+            if(pos.indexOf("s")>=0) nH = Math.max(30, oH + dy);
+            if(pos.indexOf("n")>=0){ nH = Math.max(30, oH - dy); nY = oY + dy; }
+            posicoes[i].w = nW;
+            posicoes[i].h = nH;
+            posicoes[i].x = nX;
+            posicoes[i].y = nY;
+            img.style.width = nW + "px";
+            img.style.height = nH + "px";
+            img.style.left = nX + "px";
+            img.style.top = nY + "px";
+            atualizarAlcas(i);
+          }
+          function up(){
+            document.removeEventListener("mousemove", mv);
+            document.removeEventListener("mouseup", up);
+            salvarPosicao(i);
+          }
+          document.addEventListener("mousemove", mv);
+          document.addEventListener("mouseup", up);
+        };
+        camadaAlcas.appendChild(alca);
+      });
+    }
     overlay.appendChild(img);
   });
 }
-function salvarPosicoes(){
-  posicoes.forEach(function(ex, i){
-    fetch("/mover_extra", {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:"indice=" + i + "&x=" + ex.x + "&y=" + ex.y});
+
+function atualizarAlcas(i){
+  var overlay = document.getElementById("camadaAlcas");
+  if(!overlay) return;
+  var ex = posicoes[i];
+  var w = ex.w || 180;
+  var h = ex.h || Math.round(w * 0.75);
+  overlay.querySelectorAll("[data-idx='" + i + "'][data-pos]").forEach(function(a){
+    var pos = a.dataset.pos;
+    var l = ex.x + ((pos.indexOf("w")>=0) ? -7 : w - 7);
+    var t = ex.y + ((pos.indexOf("n")>=0) ? -7 : h - 7);
+    a.style.left = l + "px";
+    a.style.top = t + "px";
   });
 }
+
+function salvarPosicao(i){
+  var ex = posicoes[i];
+  var body = "indice=" + i + "&x=" + Math.round(ex.x) + "&y=" + Math.round(ex.y) + "&w=" + Math.round(ex.w || 180) + "&h=" + Math.round(ex.h || 0);
+  fetch("/mover_extra", {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body: body});
+}
+
+// Lista lateral de imagens adicionadas
+function renderLista(){
+  var box = document.getElementById("lista_extras");
+  box.innerHTML = "";
+  if(posicoes.length === 0){
+    box.innerHTML = '<div style="padding:10px;color:#9ca3af;font-size:12px;text-align:center">Nenhuma imagem adicionada</div>';
+    return;
+  }
+  posicoes.forEach(function(ex, i){
+    var div = document.createElement("div");
+    div.className = "extra-card";
+    div.innerHTML = '<div class="top"><img class="thumb" src="/static/uploads/extra_' + i + '.png"><div class="info"><b>Imagem ' + (i+1) + '</b><br>X: ' + Math.round(ex.x) + ' Y: ' + Math.round(ex.y) + '</div><button class="btn-edit" onclick="editar(' + i + ')">Editar</button><button class="btn-del" onclick="excluir(' + i + ')">Excluir</button></div>';
+    box.appendChild(div);
+  });
+}
+
+function editar(i){
+  editandoIdx = (editandoIdx === i) ? -1 : i;
+  criarOverlay();
+}
+
 function excluir(i){
   if(!confirm("Excluir imagem " + (i+1) + "?")) return;
   var fd = new FormData();
   fd.append("indice", i);
-  fetch("/excluir_extra", {method:"POST", body:fd, redirect:"follow"}).then(function(){
+  fetch("/excluir_extra", {method:"POST", body:fd}).then(function(){
     window.location.href = "/config?t=" + Date.now();
   });
 }
-renderExtras();
+
+// Inicializa
+carregarPDF();
+renderLista();
 </script>
 </body></html>
