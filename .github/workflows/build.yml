@@ -14,7 +14,7 @@ jobs:
           msystem: MINGW64
           install: mingw-w64-x86_64-pango
       - run: pip install -r requirements.txt uvicorn python-multipart pyinstaller
-      - run: pyinstaller --noconfirm --onedir --name PropostaSolar --collect-all weasyprint --add-data "app;app" launcher.py
+      - run: pyinstaller --noconfirm --onedir --name PropostaSolar --collect-all weasyprint --collect-submodules uvicorn --hidden-import python_multipart --hidden-import multipart --add-data "app;app" launcher.py
       - shell: bash
         run: |
           mkdir -p dist/PropostaSolar/_internal/gtk
