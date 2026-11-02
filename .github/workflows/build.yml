@@ -26,9 +26,9 @@ jobs:
           name: PropostaSolar
           path: dist/PropostaSolar
       - shell: pwsh
-        run: Compress-Archive -Path dist/PropostaSolar -DestinationPath PropostaSolar.zip
+        run: iscc installer/setup.iss
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: build-${{ github.run_number }}
           name: PropostaSolar build ${{ github.run_number }}
-          files: PropostaSolar.zip
+          files: PropostaSolar_Setup.exe
