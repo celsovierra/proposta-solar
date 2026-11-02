@@ -1,0 +1,23 @@
+name: Build Windows
+on: [workflow_dispatch]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: msys2/setup-msys2@v2
+        with:
+          install: mingw-w64-x86_64-pango
+      - run: pip install -r requirements.txt uvicorn python-multipart pyinstaller
+      - run: pyinstaller --noconfirm --onedir --name PropostaSolar --collect-all weasyprint --add-data "app;app" launcher.py
+      - shell: bash
+        run: |
+          mkdir -p dist/PropostaSolar/_internal/gtk
+          cp -r /c/msys64/mingw64/bin/* dist/PropostaSolar/_internal/gtk/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PropostaSolar
+          path: dist/PropostaSolar
