@@ -5,33 +5,13 @@ from jinja2 import Template
 from weasyprint import HTML
 import shutil, os, json
 from datetime import datetime, timedelta
-from app.core.calculos import analisar
+from app.core.calculos import analisar; from app.core.irradiacao import obter_irradiacao
 
 app = FastAPI()
 os.makedirs("app/static/uploads", exist_ok=True)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
-CIDADES = {
-    "MA": {"Sao Luis": [-2.53, -44.30], "Timon": [-5.09, -42.83], "Imperatriz": [-5.53, -47.49]},
-    "PI": {"Teresina": [-5.09, -42.80], "Parnaiba": [-2.91, -41.78]},
-    "SP": {"Sao Paulo": [-23.55, -46.63], "Campinas": [-22.91, -47.06]},
-    "RJ": {"Rio de Janeiro": [-22.91, -43.17]},
-    "MG": {"Belo Horizonte": [-19.92, -43.94]},
-    "BA": {"Salvador": [-12.97, -38.50]},
-    "PR": {"Curitiba": [-25.43, -49.27]},
-    "SC": {"Florianopolis": [-27.60, -48.55]},
-    "RS": {"Porto Alegre": [-30.03, -51.23]},
-    "PE": {"Recife": [-8.05, -34.88]},
-    "CE": {"Fortaleza": [-3.73, -38.52]},
-    "DF": {"Brasilia": [-15.79, -47.88]},
-    "GO": {"Goiania": [-16.68, -49.25]},
-    "ES": {"Vitoria": [-20.32, -40.34]},
-    "AM": {"Manaus": [-3.12, -60.02]},
-    "PA": {"Belem": [-1.46, -48.50]},
-    "RN": {"Natal": [-5.79, -35.21]},
-    "MT": {"Cuiaba": [-15.60, -56.10]},
-    "MS": {"Campo Grande": [-20.44, -54.65]}
-}
+CIDADES = json.load(open("app/core/cidades.json", encoding="utf-8"))
 
 CONFIG = {
     "logo": "",
@@ -158,7 +138,7 @@ def preview():
 def gerar(cliente: str = Form(...), consumo: float = Form(...), invest: float = Form(...), uf: str = Form(...), cidade: str = Form(...)):
     if uf not in CIDADES or cidade not in CIDADES[uf]:
         return HTMLResponse(f"<h3>Cidade nao encontrada. <a href=/>Voltar</a></h3>")
-    r = analisar(consumo, invest)
+    irr, fonte = obter_irradiacao(*CIDADES[uf][cidade]); print('>>> Irradiacao', cidade, uf, irr, fonte); r = analisar(consumo * 12, invest, irr)
     with open("app/templates/proposta.html", "r", encoding="utf-8") as f:
         tpl = Template(f.read())
     linhas = ""
