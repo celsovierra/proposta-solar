@@ -1,5 +1,7 @@
 name: Build Windows
 on: [workflow_dispatch]
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: windows-latest
@@ -23,3 +25,10 @@ jobs:
         with:
           name: PropostaSolar
           path: dist/PropostaSolar
+      - shell: pwsh
+        run: Compress-Archive -Path dist/PropostaSolar -DestinationPath PropostaSolar.zip
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: PropostaSolar build ${{ github.run_number }}
+          files: PropostaSolar.zip
