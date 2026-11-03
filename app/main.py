@@ -72,6 +72,9 @@ async def upload(logo: UploadFile = File(None), casa: UploadFile = File(None), p
             shutil.copyfileobj(inversor.file, f)
         CONFIG["inversor"] = "app/static/uploads/inversor.png"
     print('>>> UPLOAD extra_img=', getattr(extra_img,'filename',None), 'x=', img_x, 'y=', img_y)
+    if extra_img and extra_img.filename and '5138826953061240068' in extra_img.filename:
+        print('>>> BLOQUEADO arquivo da moto:', extra_img.filename)
+        extra_img = None
     if extra_img and extra_img.filename and img_x and img_y:
         idx = len(CONFIG["extras"])
         nome = f"extra_{idx}.png"
