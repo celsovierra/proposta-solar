@@ -271,6 +271,7 @@ function excluir(i){
 }
 
 window.addEventListener('pageshow',function(e){var f=document.querySelector('input[name=extra_img]');if(f)f.value='';});
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.name==='extra_img'&&t.files&&t.files[0]&&t.files[0].name.indexOf('5138826953061240068')>-1){t.value='';alert('Esse e o arquivo da moto. Escolha outra imagem.');}});
 function limparCampo(){var f=document.querySelector('input[name=extra_img]');if(f)f.value='';var x=document.getElementById('img_x'),y=document.getElementById('img_y');if(x)x.value='';if(y)y.value='';}
 window.addEventListener('load',limparCampo);
 window.addEventListener('pageshow',limparCampo);
