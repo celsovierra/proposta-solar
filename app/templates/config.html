@@ -97,7 +97,7 @@ function carregarPDF(){
     for(var i=1;i<=paginas;i++){
       (function(pag){
         pdf.getPage(pag).then(function(page){
-          var viewport = page.getViewport({scale:1.4});
+          var viewport = page.getViewport({scale:1.3333333});
           var canvas = document.createElement("canvas");
           canvas.width = viewport.width;
           canvas.height = viewport.height;
