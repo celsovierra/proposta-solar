@@ -39,7 +39,7 @@ textarea{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px
 <div class=container>
 <div class=card>
 <h2>Configuracoes</h2><p class=sub>Clique no PDF para escolher a posicao</p>
-<form method=post action=/upload enctype=multipart/form-data id=form-up>
+<form autocomplete=off method=post action=/upload enctype=multipart/form-data id=form-up>
 <div class=sec-title>TEXTO</div>
 <label>TEXTO QUEM SOMOS</label>
 <textarea name=quem_somos rows=5>{{quem_somos}}</textarea>
@@ -270,6 +270,7 @@ function excluir(i){
   });
 }
 
+window.addEventListener('pageshow',function(e){var f=document.querySelector('input[name=extra_img]');if(f)f.value='';});
 // Inicializa
 carregarPDF();
 renderLista();
