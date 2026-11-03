@@ -180,3 +180,42 @@ def google_api_salvar(chave: str = Form("")):
     with open(_GFILE, "w", encoding="utf-8") as f:
         _gj.dump({"key": chave}, f)
     return {"ok": bool(chave)}
+
+
+# SOLAR-DIMENSIONAR
+@app.get("/dimensionar")
+def dimensionar_pagina():
+    with open("app/templates/dimensionar.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(f.read())
+
+def _ler_chave_google():
+    try:
+        return _gj.load(open(_GFILE, encoding="utf-8")).get("key", "")
+    except Exception:
+        return ""
+
+@app.get("/google_api_chave")
+def google_api_chave():
+    return {"key": _ler_chave_google()}
+
+@app.get("/solar_api")
+def solar_api(lat: float, lng: float):
+    import urllib.request, urllib.parse, urllib.error
+    k = _ler_chave_google()
+    if not k:
+        return {"erro": "Salve a chave da API Google primeiro."}
+    q = urllib.parse.urlencode({"location.latitude": lat, "location.longitude": lng, "requiredQuality": "BASE", "key": k})
+    url = "https://solar.googleapis.com/v1/buildingInsights:findClosest?" + q
+    try:
+        with urllib.request.urlopen(url, timeout=30) as r:
+            return _gj.loads(r.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return {"erro": "O Google nao tem dados deste telhado. Clique mais perto da casa ou tente outro ponto."}
+        try:
+            msg = _gj.loads(e.read().decode("utf-8")).get("error", {}).get("message", "")
+        except Exception:
+            msg = ""
+        return {"erro": "Erro do Google (" + str(e.code) + "): " + msg}
+    except Exception as e:
+        return {"erro": "Falha ao consultar o Google: " + str(e)}

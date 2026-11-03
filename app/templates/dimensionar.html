@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-br"><head><meta charset="utf-8"><title>Dimensionamento de placas</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#f4f6f8;color:#111827}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:#fff;border-bottom:3px solid #FFD400}
+header b{color:#14365d;font-size:18px}
+header a{color:#1f4d3a;font-weight:600;text-decoration:none}
+.wrap{display:flex;gap:16px;padding:16px;flex-wrap:wrap}
+aside{width:360px;max-width:100%;display:flex;flex-direction:column;gap:12px}
+section{background:#fff;border-radius:12px;padding:16px;box-shadow:0 4px 14px rgba(0,0,0,.07)}
+section h3{margin:0 0 10px;font-size:14px;color:#14365d;text-transform:uppercase;letter-spacing:.5px}
+input[type=text],input[type=password],input[type=number]{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;margin-bottom:8px}
+button{border:0;border-radius:8px;padding:10px 14px;cursor:pointer;font-weight:600;background:#1f4d3a;color:#fff;width:100%}
+button:hover{filter:brightness(1.15)}
+#gstatus{font-size:13px;margin-top:6px}
+main{flex:1;min-width:300px}
+#map{width:100%;height:78vh;min-height:420px;border-radius:12px;background:#cbd5e1;display:flex;align-items:center;justify-content:center;color:#475569;text-align:center;padding:20px}
+#res{font-size:14px;line-height:1.5}
+#res p{margin:4px 0}
+.seg{font-size:12px;color:#475569;border-top:1px solid #e5e7eb;padding-top:4px;margin-top:4px}
+.leg{font-size:12px;color:#475569;margin-top:8px}
+input[type=range]{width:100%}
+.dica{font-size:12px;color:#6b7280;margin:0}
+</style></head><body>
+<header><b>PROPOSTA SOLAR &middot; Dimensionamento de placas</b><a href="/">&larr; Voltar</a></header>
+<div class="wrap">
+<aside>
+<section><h3>1. Chave da API Google</h3>
+<input id="gchave" type="password" placeholder="Cole a chave aqui" autocomplete="off">
+<button id="gsalvar" type="button">Salvar chave</button>
+<div id="gstatus"></div>
+<p class="dica">Ative no Google Cloud: Maps JavaScript API, Geocoding API e Solar API.</p></section>
+<section><h3>2. Endereco do cliente</h3>
+<input id="end" type="text" placeholder="Rua, numero, cidade">
+<button id="gbuscar" type="button">Buscar no mapa</button>
+<p class="dica" style="margin-top:8px">Ou clique direto em cima do telhado no mapa.</p></section>
+<section><h3>3. Telhado e placas</h3>
+<input id="consumo" type="number" placeholder="Consumo mensal em kWh (opcional)">
+<button id="ganalisar" type="button">Analisar telhado</button>
+<div id="res" style="margin-top:10px"></div></section>
+</aside>
+<main><div id="map">Salve a chave da API para carregar o mapa.</div></main>
+</div>
+<script>
+var map=null,marker=null,geocoder=null,polys=[],dados=null,pos=null,carregando=false;
+function $(id){return document.getElementById(id);}
+window.gm_authFailure=function(){$("res").textContent="O Google recusou a chave. Confira a chave, a cobranca e se Maps JavaScript API esta ativa.";};
+function statusChave(){
+  fetch("/google_api").then(function(r){return r.json();}).then(function(d){
+    $("gstatus").style.color=d.ok?"#15803d":"#b45309";
+    $("gstatus").textContent=d.ok?("Chave salva ("+d.mascara+")"):"Cole a chave e clique em Salvar.";
+    if(d.ok){carregarMapa();}
+  });
+}
+function carregarMapa(){
+  if(carregando||(window.google&&google.maps)){return;}
+  carregando=true;
+  fetch("/google_api_chave").then(function(r){return r.json();}).then(function(d){
+    if(!d.key){carregando=false;return;}
+    var s=document.createElement("script");
+    s.src="https://maps.googleapis.com/maps/api/js?key="+encodeURIComponent(d.key)+"&callback=initMap";
+    s.async=true;document.head.appendChild(s);
+  });
+}
+window.initMap=function(){
+  $("map").innerHTML="";$("map").style.display="block";
+  map=new google.maps.Map($("map"),{center:{lat:-14.2,lng:-51.9},zoom:4,mapTypeId:"satellite",tilt:0,streetViewControl:false});
+  geocoder=new google.maps.Geocoder();
+  map.addListener("click",function(e){definirPonto(e.latLng.lat(),e.latLng.lng(),false);});
+};
+function definirPonto(lat,lng,zoom){
+  pos={lat:lat,lng:lng};
+  if(marker){marker.setMap(null);}
+  marker=new google.maps.Marker({position:pos,map:map});
+  if(zoom){map.setCenter(pos);map.setZoom(20);}
+}
+$("gsalvar").onclick=function(){
+  var fd=new URLSearchParams();fd.append("chave",$("gchave").value);
+  fetch("/google_api",{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:fd.toString()})
+  .then(function(){$("gchave").value="";location.reload();});
+};
+$("gbuscar").onclick=function(){
+  if(!geocoder){$("res").textContent="Salve a chave para carregar o mapa primeiro.";return;}
+  geocoder.geocode({address:$("end").value,region:"BR"},function(r,st){
+    if(st==="OK"){var l=r[0].geometry.location;definirPonto(l.lat(),l.lng(),true);}
+    else{$("res").textContent="Endereco nao encontrado ("+st+").";}
+  });
+};
+$("ganalisar").onclick=function(){
+  if(!pos){$("res").textContent="Busque o endereco ou clique no telhado no mapa.";return;}
+  $("res").textContent="Consultando o Google...";
+  fetch("/solar_api?lat="+pos.lat+"&lng="+pos.lng).then(function(r){return r.json();}).then(function(d){
+    if(d.erro){$("res").textContent=d.erro;return;}
+    dados=d;montar();
+  }).catch(function(){$("res").textContent="Falha na consulta. Tente de novo.";});
+};
+function cantos(p,w,h,az){
+  var a=az*Math.PI/180,hw=w/2,hh=h/2;
+  var pts=[[hw,hh],[hw,-hh],[-hw,-hh],[-hw,hh]];
+  return pts.map(function(q){
+    var e=q[0]*Math.cos(a)+q[1]*Math.sin(a);
+    var n=-q[0]*Math.sin(a)+q[1]*Math.cos(a);
+    return {lat:p.center.latitude+n/111320,lng:p.center.longitude+e/(111320*Math.cos(p.center.latitude*Math.PI/180))};
+  });
+}
+function montar(){
+  var sp=dados.solarPotential||{},pan=sp.solarPanels||[],segs=sp.roofSegmentStats||[];
+  if(!pan.length){$("res").textContent="O Google nao retornou paineis para este telhado.";return;}
+  var cap=sp.panelCapacityWatts||400,esc=620/cap;
+  var cons=parseFloat($("consumo").value)||0,n=pan.length;
+  if(cons>0){var acc=0;for(var i=0;i<pan.length;i++){acc+=pan[i].yearlyEnergyDcKwh*esc;if(acc>=cons*12){n=i+1;break;}}}
+  var area=(sp.wholeRoofStats||{}).areaMeters2||0;
+  var h="<p><b>Area do telhado:</b> "+Math.round(area)+" m&sup2;</p>";
+  h+="<p><b>Maximo de paineis:</b> "+pan.length+"</p>";
+  h+="<p><b>Sol maximo:</b> "+Math.round(sp.maxSunshineHoursPerYear||0)+" h/ano</p>";
+  h+="<p>Paineis de 620 W: <b id=\"qtd\"></b></p>";
+  h+="<input type=\"range\" id=\"sl\" min=\"1\" max=\""+pan.length+"\" value=\""+n+"\">";
+  h+="<div id=\"calc\"></div>";
+  h+="<div class=\"leg\">Verde = mais sol. Laranja = menos sol (sombra). A geracao considera sombra anual.</div>";
+  segs.forEach(function(sg,i){
+    var q=(sg.stats||{}).sunshineQuantiles||[];
+    h+="<div class=\"seg\">Agua "+(i+1)+": inclinacao "+Math.round(sg.pitchDegrees)+"&deg;, azimute "+Math.round(sg.azimuthDegrees)+"&deg;, "+Math.round((sg.stats||{}).areaMeters2||0)+" m&sup2;, sol mediano "+Math.round(q[Math.floor(q.length/2)]||0)+" h/ano</div>";
+  });
+  $("res").innerHTML=h;
+  function desenhar(k){
+    polys.forEach(function(x){x.setMap(null);});polys=[];
+    var en=pan.slice(0,k).map(function(x){return x.yearlyEnergyDcKwh;});
+    var mn=Math.min.apply(null,en),mx=Math.max.apply(null,en),tot=0;
+    var w=sp.panelWidthMeters||1.1,hh=sp.panelHeightMeters||1.7;
+    pan.slice(0,k).forEach(function(x){
+      var seg=segs[x.segmentIndex]||{azimuthDegrees:0};
+      var dw=x.orientation==="PORTRAIT"?w:hh,dh=x.orientation==="PORTRAIT"?hh:w;
+      var t=(x.yearlyEnergyDcKwh-mn)/((mx-mn)||1);
+      var cor="hsl("+(20+100*t)+",85%,45%)";
+      polys.push(new google.maps.Polygon({paths:cantos(x,dw,dh,seg.azimuthDegrees),strokeColor:"#ffffff",strokeWeight:1,fillColor:cor,fillOpacity:0.85,map:map}));
+      tot+=x.yearlyEnergyDcKwh*esc;
+    });
+    $("qtd").textContent=k;
+    $("calc").innerHTML="<p><b>Potencia:</b> "+(k*0.62).toFixed(2)+" kWp</p><p><b>Geracao estimada:</b> "+Math.round(tot/12)+" kWh/mes</p><p><b>Area ocupada:</b> "+(k*w*hh).toFixed(1)+" m&sup2;</p>";
+  }
+  desenhar(n);
+  $("sl").oninput=function(){desenhar(parseInt(this.value,10));};
+  map.setCenter(pos);map.setZoom(20);
+}
+statusChave();
+</script></body></html>
