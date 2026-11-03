@@ -27,7 +27,7 @@ input[type=range]{width:100%}
 <header><b>PROPOSTA SOLAR &middot; Dimensionamento de placas</b><a href="/">&larr; Voltar</a></header>
 <div class="wrap">
 <aside>
-<section><h3>1. Chave da API Google</h3>
+<section><h3 style="display:flex;justify-content:space-between;align-items:center">1. Chave da API Google<button id="tutbtn" type="button" title="Tutorial: como conseguir a API do Google" onclick="document.getElementById('tutmodal').style.display='flex'" style="width:auto;background:#FFD400;color:#111827;padding:4px 10px;font-size:18px;line-height:1">&#127891;</button></h3>
 <input id="gchave" type="password" placeholder="Cole a chave aqui" autocomplete="off">
 <button id="gsalvar" type="button">Salvar chave</button>
 <div id="gstatus"></div>
@@ -145,4 +145,11 @@ function montar(){
   map.setCenter(pos);map.setZoom(20);
 }
 statusChave();
-</script></body></html>
+</script><!-- TUTORIAL-API -->
+<div id="tutmodal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
+<div style="background:#fff;border-radius:14px;padding:24px;width:min(560px,94vw);max-height:85vh;overflow:auto;border-top:5px solid #FFD400;box-shadow:0 20px 50px rgba(0,0,0,.4)">
+<h3 style="margin:0 0 10px;color:#14365d;text-transform:none;font-size:18px">&#127891; Como conseguir a API do Google</h3>
+<div id="tutcorpo" style="font-size:14px;line-height:1.6;color:#374151"><p>Tutorial em construcao.</p></div>
+<button type="button" onclick="document.getElementById('tutmodal').style.display='none'" style="margin-top:14px">Fechar</button>
+</div></div>
+</body></html>
