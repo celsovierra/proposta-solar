@@ -72,11 +72,19 @@ async def upload(logo: UploadFile = File(None), casa: UploadFile = File(None), p
             shutil.copyfileobj(inversor.file, f)
         CONFIG["inversor"] = "app/static/uploads/inversor.png"
     print('>>> UPLOAD extra_img=', getattr(extra_img,'filename',None), 'x=', img_x, 'y=', img_y)
-    if extra_img and extra_img.filename and img_x and img_y and '5138826953061240068' not in extra_img.filename:
+    if extra_img and extra_img.filename and img_x and img_y:
         idx = len(CONFIG["extras"])
         nome = f"extra_{idx}.png"
         with open(f"app/static/uploads/{nome}", "wb") as f:
             shutil.copyfileobj(extra_img.file, f)
+        try:
+            from PIL import Image as _I
+            _im = _I.open(f"app/static/uploads/{nome}")
+            if '5138826953061240068' in extra_img.filename:
+                _im = _im.crop((0, int(_im.size[1]*0.32), _im.size[0], _im.size[1]))
+                _im.save(f"app/static/uploads/{nome}")
+        except Exception as e:
+            print('Erro corte:', e)
         CONFIG["extras"].append({"src": f"app/static/uploads/{nome}", "x": int(img_x or 0), "y": int(img_y or 0), "w": 180, "h": 0})
     if quem_somos:
         CONFIG["quem_somos"] = quem_somos
