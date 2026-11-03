@@ -271,6 +271,9 @@ function excluir(i){
 }
 
 window.addEventListener('pageshow',function(e){var f=document.querySelector('input[name=extra_img]');if(f)f.value='';});
+function limparCampo(){var f=document.querySelector('input[name=extra_img]');if(f)f.value='';var x=document.getElementById('img_x'),y=document.getElementById('img_y');if(x)x.value='';if(y)y.value='';}
+window.addEventListener('load',limparCampo);
+window.addEventListener('pageshow',limparCampo);
 // Inicializa
 carregarPDF();
 renderLista();
