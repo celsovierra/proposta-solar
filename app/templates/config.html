@@ -139,7 +139,7 @@ function criarOverlay(){
   posicoes.forEach(function(ex, i){
     var editando = (editandoIdx === i);
     var img = document.createElement("img");
-    img.src = "/static/uploads/extra_" + i + ".png";
+    img.src = "/static/uploads/extra_" + i + ".png?t=" + Date.now();
     var w = ex.w || 180;
     var h = ex.h || 0;
     img.style.cssText = "position:absolute;left:" + ex.x + "px;top:" + ex.y + "px;width:" + w + "px" + (h ? ";height:" + h + "px" : "") + ";pointer-events:auto;user-select:none;cursor:" + (editando ? "move" : "default") + ";border:2px dashed " + (editando ? "#2d6a9f" : "transparent");
@@ -251,7 +251,7 @@ function renderLista(){
   posicoes.forEach(function(ex, i){
     var div = document.createElement("div");
     div.className = "extra-card";
-    div.innerHTML = '<div class="top"><img class="thumb" src="/static/uploads/extra_' + i + '.png"><div class="info"><b>Imagem ' + (i+1) + '</b><br>X: ' + Math.round(ex.x) + ' Y: ' + Math.round(ex.y) + '</div><button class="btn-edit" onclick="editar(' + i + ')">Editar</button><form method="post" action="/excluir_extra" style="display:inline;margin:0"><input type="hidden" name="indice" value="' + i + '"><button class="btn-del" type="submit">Excluir</button></form></div>';
+    div.innerHTML = '<div class="top"><img class="thumb" src="/static/uploads/extra_' + i + '.png?t=' + Date.now() + '"><div class="info"><b>Imagem ' + (i+1) + '</b><br>X: ' + Math.round(ex.x) + ' Y: ' + Math.round(ex.y) + '</div><button class="btn-edit" onclick="editar(' + i + ')">Editar</button><form method="post" action="/excluir_extra" style="display:inline;margin:0"><input type="hidden" name="indice" value="' + i + '"><button class="btn-del" type="submit">Excluir</button></form></div>';
     box.appendChild(div);
   });
 }
