@@ -71,7 +71,7 @@ async def upload(logo: UploadFile = File(None), casa: UploadFile = File(None), p
         with open("app/static/uploads/inversor.png", "wb") as f:
             shutil.copyfileobj(inversor.file, f)
         CONFIG["inversor"] = "app/static/uploads/inversor.png"
-    if extra_img and extra_img.filename:
+    if extra_img and extra_img.filename and img_x and img_y:
         idx = len(CONFIG["extras"])
         nome = f"extra_{idx}.png"
         with open(f"app/static/uploads/{nome}", "wb") as f:
