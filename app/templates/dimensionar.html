@@ -149,7 +149,26 @@ statusChave();
 <div id="tutmodal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center">
 <div style="background:#fff;border-radius:14px;padding:24px;width:min(560px,94vw);max-height:85vh;overflow:auto;border-top:5px solid #FFD400;box-shadow:0 20px 50px rgba(0,0,0,.4)">
 <h3 style="margin:0 0 10px;color:#14365d;text-transform:none;font-size:18px">&#127891; Como conseguir a API do Google</h3>
-<div id="tutcorpo" style="font-size:14px;line-height:1.6;color:#374151"><p>Tutorial em construcao.</p></div>
+<div id="tutcorpo" style="font-size:14px;line-height:1.6;color:#374151"><!-- TUTORIAL-PASSOS -->
+<p style="margin:0 0 12px">Leva uns 10 minutos. Você precisa de uma <b>conta Google</b> e de um <b>cartão</b> para ativar a cobrança (o Google exige, mesmo usando só o limite grátis).</p>
+<ol style="padding-left:20px;margin:0">
+<li style="margin-bottom:12px"><b>Entre no Google Cloud.</b> Abra <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">console.cloud.google.com</a>, entre com sua conta Google e aceite os termos.</li>
+<li style="margin-bottom:12px"><b>Crie um projeto.</b> Abra <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener">criar projeto</a>, escreva o nome <i>proposta-solar</i> e clique em <b>Criar</b>. Depois confira, no topo da tela, se o projeto selecionado é esse.</li>
+<li style="margin-bottom:12px"><b>Ative a cobrança.</b> Abra <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">faturamento</a>, crie a conta de faturamento, cadastre o cartão e vincule ao projeto. Dentro do limite grátis não há cobrança (hoje: 10.000 consultas por mês de dados do telhado). Confira os valores em <a href="https://developers.google.com/maps/billing-and-pricing/pricing" target="_blank" rel="noopener">preços do Google</a>.</li>
+<li style="margin-bottom:12px"><b>Ative as 3 APIs.</b> Em cada link, clique no botão <b>Ativar</b>:
+<br>&bull; <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank" rel="noopener">Maps JavaScript API</a> (o mapa)
+<br>&bull; <a href="https://console.cloud.google.com/apis/library/geocoding-backend.googleapis.com" target="_blank" rel="noopener">Geocoding API</a> (busca por endereço)
+<br>&bull; <a href="https://console.cloud.google.com/apis/library/solar.googleapis.com" target="_blank" rel="noopener">Solar API</a> (telhado e placas)</li>
+<li style="margin-bottom:12px"><b>Crie a chave.</b> Abra <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">credenciais</a>, clique em <b>Criar credenciais</b> e depois em <b>Chave de API</b>. Copie a chave (ela começa com <i>AIza</i>).</li>
+<li style="margin-bottom:12px"><b>Proteja a chave.</b> Clique no nome da chave. Em <b>Restrições de API</b>, escolha <b>Restringir chave</b>, marque as 3 APIs do passo 4 e clique em <b>Salvar</b>. Em <b>Restrições de aplicativo</b> deixe <b>Nenhuma</b>: a consulta do telhado sai do servidor e seria bloqueada por restrição de site ou de IP.</li>
+<li style="margin-bottom:12px"><b>Limite o gasto.</b> Crie um <a href="https://console.cloud.google.com/billing/budgets" target="_blank" rel="noopener">orçamento com alerta</a> (ele só avisa, não bloqueia). Para bloquear de verdade, defina uma <a href="https://console.cloud.google.com/apis/api/solar.googleapis.com/quotas" target="_blank" rel="noopener">cota diária da Solar API</a>.</li>
+<li style="margin-bottom:12px"><b>Cole a chave aqui.</b> Feche esta janela, cole a chave no campo <b>Chave da API Google</b>, clique em <b>Salvar chave</b> e espere o mapa carregar. Depois digite o endereço do cliente e clique em <b>Analisar telhado</b>.</li>
+</ol>
+<p style="margin:14px 0 6px"><b>Se der problema:</b></p>
+<p style="margin:0 0 6px">&bull; <b>Mapa não carrega ou "Google recusou a chave":</b> confira se a cobrança está ativa e se a Maps JavaScript API foi ativada. Espere 1 a 2 minutos depois de criar a chave.</p>
+<p style="margin:0 0 6px">&bull; <b>Erro 403:</b> a Solar API não foi ativada, ou a chave está restrita sem ela.</p>
+<p style="margin:0 0 6px">&bull; <b>"Não tem dados deste telhado":</b> clique mais perto da casa. Em algumas áreas o Google não tem cobertura.</p>
+<p style="margin:10px 0 0;font-size:12px;color:#6b7280">Documentação oficial: <a href="https://developers.google.com/maps/documentation/solar/overview" target="_blank" rel="noopener">Solar API</a></p></div>
 <button type="button" onclick="document.getElementById('tutmodal').style.display='none'" style="margin-top:14px">Fechar</button>
 </div></div>
 </body></html>
