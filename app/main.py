@@ -160,3 +160,23 @@ def gerar(cliente: str = Form(...), consumo: float = Form(...), invest: float = 
     html = tpl.render(cliente=cliente, kwp=r["kwp"], geracao_mes=r["geracao_mes"], area=r["area"], paineis=r["paineis"], invest_fmt=fmt(invest), economia_ano=fmt(r["economia_ano"]), economia_25=fmt(r["economia_ano"]*25), payback=r["payback"], linhas=linhas, cfg=CONFIG, extras=CONFIG["extras"], validade=(hoje+timedelta(days=3)).strftime("%d/%m/%Y"), data_emissao=hoje.strftime("%d/%m/%Y"))
     pdf = HTML(string=html, base_url=os.path.abspath(".")).write_pdf()
     return Response(content=pdf, media_type="application/pdf", headers={"Content-Disposition": f"inline; filename=proposta_{cliente}.pdf"})
+
+
+# GOOGLE-API-KEY
+import json as _gj
+_GFILE = "app/core/google_api.json"
+
+@app.get("/google_api")
+def google_api_status():
+    try:
+        k = _gj.load(open(_GFILE, encoding="utf-8")).get("key", "")
+    except Exception:
+        k = ""
+    return {"ok": bool(k), "mascara": ("..." + k[-4:]) if k else ""}
+
+@app.post("/google_api")
+def google_api_salvar(chave: str = Form("")):
+    chave = chave.strip()
+    with open(_GFILE, "w", encoding="utf-8") as f:
+        _gj.dump({"key": chave}, f)
+    return {"ok": bool(chave)}
