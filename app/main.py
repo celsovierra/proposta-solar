@@ -81,7 +81,7 @@ async def upload(logo: UploadFile = File(None), casa: UploadFile = File(None), p
             from PIL import Image as _I
             _im = _I.open(f"app/static/uploads/{nome}")
             if '5138826953061240068' in extra_img.filename:
-                _im = _im.crop((0, int(_im.size[1]*0.32), _im.size[0], _im.size[1]))
+                _im = _im.crop((0, int(_im.size[1]*0.150), _im.size[0], _im.size[1]))
                 _im.save(f"app/static/uploads/{nome}")
         except Exception as e:
             print('Erro corte:', e)
