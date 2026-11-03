@@ -251,7 +251,7 @@ function renderLista(){
   posicoes.forEach(function(ex, i){
     var div = document.createElement("div");
     div.className = "extra-card";
-    div.innerHTML = '<div class="top"><img class="thumb" src="/static/uploads/extra_' + i + '.png"><div class="info"><b>Imagem ' + (i+1) + '</b><br>X: ' + Math.round(ex.x) + ' Y: ' + Math.round(ex.y) + '</div><button class="btn-edit" onclick="editar(' + i + ')">Editar</button><button class="btn-del" onclick="excluir(' + i + ')">Excluir</button></div>';
+    div.innerHTML = '<div class="top"><img class="thumb" src="/static/uploads/extra_' + i + '.png"><div class="info"><b>Imagem ' + (i+1) + '</b><br>X: ' + Math.round(ex.x) + ' Y: ' + Math.round(ex.y) + '</div><button class="btn-edit" onclick="editar(' + i + ')">Editar</button><form method="post" action="/excluir_extra" style="display:inline;margin:0"><input type="hidden" name="indice" value="' + i + '"><button class="btn-del" type="submit">Excluir</button></form></div>';
     box.appendChild(div);
   });
 }
